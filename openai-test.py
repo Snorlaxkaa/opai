@@ -1,22 +1,27 @@
-import openai
+from openai import OpenAI
 import os
 
-# 確保你的 OpenAI API 密鑰已設定在環境變量中
-openai.api_key = "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"
 
-try:
-    # 調用 OpenAI API 生成文本
-    response = openai.Completion.create(
-        model="gpt-3.5-turbo-instruct",  # 替換為當前可用的最新模型
-        prompt="世界上最高的山是什麼？",
-        temperature=0.7,
-        max_tokens=100,
-        top_p=1.0,
-        frequency_penalty=0,
-        presence_penalty=0
-    )
+def main():
+    try:
+        # 測試使用 ChatCompletion 接口
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # 替換為你需要測試的模型名稱
+            messages=[
+                {"role": "system", "content": "你是一個友好的助手。"},
+                {"role": "user", "content": "Hello! How are you?"}
+            ],
+            max_tokens=50,  # 減少測試時的 Token 消耗
+            temperature=0.5
+        )
 
-    print(response.choices[0].text.strip())
+        # 打印生成的回應
+        print("API 測試成功！生成的回應如下：")
+        print(response["choices"][0]["message"]["content"].strip())
 
-except Exception as e:
-    print(f"發生錯誤: {e}")
+    except Exception as e:
+        print("API 測試失敗，發生錯誤：")
+        print(e)
+
+if __name__ == "__main__":
+    main()

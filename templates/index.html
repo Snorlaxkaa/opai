@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>DALL·E 3 Image Generator</h1>
+        <div class="input-container">
+            <input type="text" id="prompt" placeholder="Enter a description">
+            <button onclick="generateImage()">Generate</button>
+        </div>
+        <div class="suggestion-toggle" onclick="toggleSuggestions()">▼ Suggestions</div>
+        <div id="suggestion-box" class="suggestion-box hidden">
+            <div onclick="addSuggestion('櫻花')">櫻花</div>
+            <div onclick="addSuggestion('城市')">城市</div>
+            <div onclick="addSuggestion('餐廳')">餐廳</div>
+            <div onclick="addSuggestion('公車站')">公車站</div>
+            <div onclick="addSuggestion('監獄')">監獄</div>
+            <div onclick="addSuggestion('機場')">機場</div>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // 切換建議框的顯示/隱藏
+        function toggleSuggestions() {
+            const suggestionBox = document.getElementById('suggestion-box');
+            suggestionBox.classList.toggle('hidden');
+        }
+
+        // 將建議詞追加到輸入框中
+        function addSuggestion(suggestion) {
+            const input = document.getElementById('prompt');
+            if (input.value.trim()) {
+                input.value += `, ${suggestion}`; // 用逗號分隔追加
+            } else {
+                input.value = suggestion; // 如果輸入框是空的，直接添加
+            }
+        }
+
+        // 使用 JavaScript 下載圖片
+        function downloadImage(url, filename) {
+            const link = document.createElement('a'); // 創建隱藏的下載連結
+            link.href = url;
+            link.download = filename; // 設置下載的文件名稱
+            document.body.appendChild(link);
+            link.click(); // 模擬點擊下載
+            document.body.removeChild(link); // 下載完成後移除
+        }
+
+        async function generateImage() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert("Please enter a description!");
+                return;
+            }
+
+            document.getElementById('result').textContent = "Generating image...";
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const result = await response.json();
+                if (result.url) {
+                    // 顯示圖片和下載按鈕
+                    document.getElementById('result').innerHTML = `
+                        <img src="${result.url}" alt="Generated Image">
+                        <button onclick="downloadImage('${result.url}', 'generated_image.jpg')" class="download-button">Download</button>
+                    `;
+                } else {
+                    document.getElementById('result').textContent = result.error || "Error generating image.";
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = "Network error or server issue.";
+            }
+        }
+    </script>
+</body>
+</html>
