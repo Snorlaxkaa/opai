@@ -90,3 +90,11 @@ button.record-button {
     border-radius: 5px;
     cursor: pointer;
 }
+#controls {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#controls.show {
+    opacity: 1;
+}

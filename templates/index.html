@@ -10,12 +10,19 @@
     <div class="container">
         <h1>DALL·E 3 Image Generator</h1>
         <div class="input-container">
-            <input type="text" id="prompt" placeholder="Enter a description">
-            <button onclick="generateImage()">Generate</button>
             <button class="record-button" onclick="startRecording()">🎤 開始錄音</button>
+        </div>
+        <div id="controls" style="display: none;">
+            <div class="input-container">
+                <input type="text" id="prompt" placeholder="Enter a description">
+                <button onclick="generateImage()">Generate</button>
+            </div>
         </div>
         <div id="result"></div>
     </div>
+
+
+
 
     <script>
         async function generateImage() {
@@ -74,8 +81,13 @@
                         const transcriptionResponse = await fetch('/transcription');
                         const transcriptionResult = await transcriptionResponse.json();
                         if (transcriptionResult.text) {
-                            // 覆蓋輸入框的內容
+                            // 將轉錄文字填入輸入框
                             document.getElementById('prompt').value = transcriptionResult.text;
+        
+                            // 顯示輸入框和生成按鈕
+                            const controls = document.getElementById('controls');
+                            controls.classList.add('show'); // 添加 class 顯示元素
+                            controls.style.display = "block"; // 確保顯示
                         } else {
                             alert(transcriptionResult.error || "轉錄失敗。");
                         }
@@ -88,6 +100,7 @@
                 alert("錄音時出錯。");
             }
         }
+        
         
         
     </script>
