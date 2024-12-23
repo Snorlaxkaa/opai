@@ -1,0 +1,43 @@
+            <div class="dropdown">
+                <button class="dropdown-button" onclick="toggleDropdown('background-menu')">背景 ▼</button>
+                <div id="background-menu" class="dropdown-menu hidden">
+                    <div onclick="addSuggestion('櫻花')">櫻花</div>
+                    <div onclick="addSuggestion('城市')">城市</div>
+                    <div onclick="addSuggestion('餐廳')">餐廳</div>
+                    <div onclick="addSuggestion('公車站')">公車站</div>
+                    <div onclick="addSuggestion('監獄')">監獄</div>
+                    <div onclick="addSuggestion('機場')">機場</div>
+                </div>
+            </div>
+            <!-- 人物下拉選單 -->
+            <div class="dropdown">
+                <button class="dropdown-button" onclick="toggleDropdown('character-menu')">人物 ▼</button>
+                <div id="character-menu" class="dropdown-menu hidden">
+                    <div onclick="addSuggestion('女孩')">女孩</div>
+                    <div onclick="addSuggestion('男孩')">男孩</div>
+                    <div onclick="addSuggestion('2男孩')">2男孩</div>
+                    <div onclick="addSuggestion('2女孩')">2女孩</div>
+                    <div onclick="addSuggestion('女性')">女性</div>
+                    <div onclick="addSuggestion('男性')">男性</div>
+                    <div onclick="addSuggestion('可愛')">可愛</div>
+                    <div onclick="addSuggestion('姐妹')">姐妹</div>
+                    <div onclick="addSuggestion('大小姐')">大小姐</div>
+                </div>
+            </div>
+            <!-- 身分下拉選單 -->
+            <div class="dropdown">
+                <button class="dropdown-button" onclick="toggleDropdown('identity-menu')">身分 ▼</button>
+                <div id="identity-menu" class="dropdown-menu hidden">
+                    <div onclick="addSuggestion('空姐')">空姐</div>
+                    <div onclick="addSuggestion('護士')">護士</div>
+                    <div onclick="addSuggestion('士兵')">士兵</div>
+                    <div onclick="addSuggestion('廚師')">廚師</div>
+                    <div onclick="addSuggestion('學生')">學生</div>
+                    <div onclick="addSuggestion('女僕')">女僕</div>
+                    <div onclick="addSuggestion('醫生')">醫生</div>
+                    <div onclick="addSuggestion('老師')">老師</div>
+                    <div onclick="addSuggestion('消防員')">消防員</div>
+                    <div onclick="addSuggestion('運動員')">運動員</div>
+                    <div onclick="addSuggestion('警察')">警察</div>
+                    <div onclick="addSuggestion('人偶')">人偶</div>
+                    <div onclick="addSuggestion('魔術師')">魔術師</div>

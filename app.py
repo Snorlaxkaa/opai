@@ -1,10 +1,32 @@
 from flask import Flask, request, render_template, jsonify
 from openai import OpenAI
 import os
+from threading import Thread
+from speak import record_audio  # 確保這裡的路徑和模組名稱正確
+from speak import transcribe_audio
+
 client = OpenAI()
 
 
 app = Flask(__name__)
+def background_recording():
+    try:
+        print("開始錄音...")
+        output_file = "recorded_audio.wav"
+        record_audio(output_file)  # 錄音
+        print("錄音完成，開始進行語音轉文字...")
+
+        transcription_text = transcribe_audio(output_file)  # 語音轉文字
+        print(f"轉錄結果：{transcription_text}")
+
+        # 將轉錄結果寫入文件
+        with open("transcription.txt", "w", encoding="utf-8") as f:
+            f.write(transcription_text)
+        print("轉錄結果已寫入 transcription.txt")
+    except Exception as e:
+        print(f"錄音或轉錄時發生錯誤: {e}")
+        raise
+
 
 # 首頁路由：渲染 index.html
 @app.route('/')
@@ -37,15 +59,31 @@ def generate_image():
     
 @app.route('/transcription', methods=['GET'])
 def get_transcription():
-    """返回语音转文字结果"""
     try:
-        # 读取 transcription.txt 文件内容
-        with open("transcription.txt", "r", encoding="utf-8") as f:
-            transcription_text = f.read()
-        return jsonify({"text": transcription_text})
-    except FileNotFoundError:
-        return jsonify({"error": "No transcription file found. Please run speak.py first."}), 404
+        # 檢查是否存在 transcription.txt 文件
+        transcription_file = "transcription.txt"
+        if os.path.exists(transcription_file):
+            with open(transcription_file, "r", encoding="utf-8") as file:
+                transcription_text = file.read()
+            return jsonify({"text": transcription_text})
+        else:
+            return jsonify({"error": "Transcription file not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    
+
+
+@app.route('/start-recording', methods=['POST'])
+def start_recording():
+    try:
+        # 啟動錄音
+        recording_thread = Thread(target=background_recording)
+        recording_thread.start()
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"錄音路由錯誤: {e}")
+        return jsonify({"success": False, "error": str(e)})
+
+
 if __name__ == '__main__':
     app.run(debug=True)

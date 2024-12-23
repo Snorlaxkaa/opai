@@ -79,5 +79,8 @@ if __name__ == "__main__":
     print(transcription_text)
         # 將轉錄結果保存到 UTF-8 編碼的文件中
     with open("transcription.txt", "w", encoding="utf-8") as f:
+        print("開始寫入轉錄結果到 transcription.txt...")
         f.write(transcription_text)
+        print("成功寫入 transcription.txt")
+
 
