@@ -1,27 +1,62 @@
+import pyaudio
+import wave
 from openai import OpenAI
-import os
 
+# 初始化 OpenAI 客戶端
+client = OpenAI()
 
-def main():
-    try:
-        # 測試使用 ChatCompletion 接口
-        response = openai.ChatCompletion.create(
-            model="gpt-4",  # 替換為你需要測試的模型名稱
-            messages=[
-                {"role": "system", "content": "你是一個友好的助手。"},
-                {"role": "user", "content": "Hello! How are you?"}
-            ],
-            max_tokens=50,  # 減少測試時的 Token 消耗
-            temperature=0.5
+def record_audio(output_file, record_seconds=10, sample_rate=44100, channels=1, chunk_size=1024):
+    """錄音功能"""
+    audio = pyaudio.PyAudio()
+    print("錄音開始...")
+
+    # 開啟錄音流
+    stream = audio.open(format=pyaudio.paInt16,  # 音頻格式
+                        channels=channels,      # 通道數
+                        rate=sample_rate,       # 取樣率
+                        input=True,             # 輸入模式
+                        frames_per_buffer=chunk_size)  # 緩衝區大小
+
+    frames = []
+
+    # 錄音迴圈
+    for _ in range(0, int(sample_rate / chunk_size * record_seconds)):
+        data = stream.read(chunk_size)
+        frames.append(data)
+
+    # 結束錄音
+    print("錄音結束")
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+
+    # 將錄音儲存為 wav 檔案
+    with wave.open(output_file, 'wb') as wf:
+        wf.setnchannels(channels)
+        wf.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
+        wf.setframerate(sample_rate)
+        wf.writeframes(b''.join(frames))
+
+def transcribe_audio(file_path):
+    """使用 OpenAI Whisper API 進行語音轉文字"""
+    with open(file_path, "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
         )
-
-        # 打印生成的回應
-        print("API 測試成功！生成的回應如下：")
-        print(response["choices"][0]["message"]["content"].strip())
-
-    except Exception as e:
-        print("API 測試失敗，發生錯誤：")
-        print(e)
+    return transcription.text
 
 if __name__ == "__main__":
-    main()
+    # 錄音參數
+    output_file = r"C:\Users\USER\Desktop\opAI\recorded_audio.wav"
+    record_seconds = 5  # 錄音時長 (秒)
+
+    # 開始錄音
+    record_audio(output_file, record_seconds)
+
+    # 語音轉文字
+    transcription_text = transcribe_audio(output_file)
+
+    # 輸出轉錄結果
+    print("語音轉文字結果：")
+    print(transcription_text)

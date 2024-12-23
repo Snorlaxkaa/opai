@@ -25,7 +25,7 @@ def generate_image():
             model="dall-e-3",
             prompt=prompt,
             size="1024x1024",
-            quality="standard",#standard or hd 去做切換 hd 會比較貴
+            quality="hd",#standard or hd 去做切換 hd 會比較貴
             n=1,
         )
         # 獲取生成圖片的 URL

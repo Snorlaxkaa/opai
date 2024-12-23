@@ -11,7 +11,7 @@ body {
 
 .container {
     text-align: center;
-    max-width: 600px;
+    max-width: 700px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -43,48 +43,64 @@ button {
     cursor: pointer;
 }
 
-/* 建議框切換按鈕 */
-.suggestion-toggle {
-    margin: 10px auto;
-    cursor: pointer;
-    font-size: 16px;
-    color: #007bff;
-    text-decoration: underline;
-    user-select: none;
+/* 下拉容器 */
+.dropdown-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* 增加間距 */
+    margin-top: 20px;
 }
 
-/* 建議框樣式 */
-.suggestion-box {
-    margin: 10px auto;
-    width: 80%;
-    max-width: 300px;
+/* 下拉選單 */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dropdown-button:hover {
+    background-color: #0056b3;
+}
+
+/* 下拉菜單內容 */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* 顯示在按鈕下方 */
+    left: 0;
     background-color: #f1f1f1;
     border: 1px solid #ddd;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    padding: 10px;
-    box-sizing: border-box;
-    display: block;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
 }
 
-/* 隱藏建議框 */
-.suggestion-box.hidden {
+/* 隱藏下拉菜單 */
+.dropdown-menu.hidden {
     display: none;
 }
 
-/* 單個建議詞樣式 */
-.suggestion-box div {
+/* 下拉選單項目 */
+.dropdown-menu div {
     padding: 10px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
 }
 
-.suggestion-box div:last-child {
+.dropdown-menu div:last-child {
     border-bottom: none;
 }
 
-.suggestion-box div:hover {
+.dropdown-menu div:hover {
     background-color: #e0e0e0;
 }
 
@@ -100,22 +116,6 @@ button {
     max-width: 100%;
 }
 
-/* 下載按鈕樣式 */
-.download-button {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
-    text-decoration: none;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.download-button:hover {
-    background-color: #0056b3;
-}
 /* 下載按鈕樣式 */
 .download-button {
     display: inline-block;
