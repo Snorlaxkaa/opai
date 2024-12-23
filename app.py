@@ -25,7 +25,7 @@ def generate_image():
             model="dall-e-3",
             prompt=prompt,
             size="1024x1024",
-            quality="hd",#standard or hd 去做切換 hd 會比較貴
+            quality="standard",#standard or hd 去做切換 hd 會比較貴
             n=1,
         )
         # 獲取生成圖片的 URL
@@ -34,6 +34,18 @@ def generate_image():
     except Exception as e:
         # 返回錯誤訊息
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/transcription', methods=['GET'])
+def get_transcription():
+    """返回语音转文字结果"""
+    try:
+        # 读取 transcription.txt 文件内容
+        with open("transcription.txt", "r", encoding="utf-8") as f:
+            transcription_text = f.read()
+        return jsonify({"text": transcription_text})
+    except FileNotFoundError:
+        return jsonify({"error": "No transcription file found. Please run speak.py first."}), 404
 
+    
 if __name__ == '__main__':
     app.run(debug=True)

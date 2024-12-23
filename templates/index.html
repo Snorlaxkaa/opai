@@ -37,7 +37,7 @@
                     <div onclick="addSuggestion('女性')">女性</div>
                     <div onclick="addSuggestion('男性')">男性</div>
                     <div onclick="addSuggestion('可愛')">可愛</div>
-                    <div onclick="addSuggestion('姊妹')">姊妹</div>
+                    <div onclick="addSuggestion('姐妹')">姐妹</div>
                     <div onclick="addSuggestion('大小姐')">大小姐</div>
                 </div>
             </div>
@@ -81,6 +81,21 @@
             }
         }
 
+        async function loadTranscription() {
+            try {
+                const response = await fetch('/transcription');
+                const data = await response.json();
+                if (data.text) {
+                    document.getElementById('prompt').value = data.text;
+                } else {
+                    alert(data.error || "No transcription available.");
+                }
+            } catch (error) {
+                alert("Failed to load transcription.");
+                console.error("Error fetching transcription:", error);
+            }
+        }
+
         async function generateImage() {
             const prompt = document.getElementById('prompt').value.trim();
             if (!prompt) {
@@ -101,7 +116,6 @@
 
                 const result = await response.json();
                 if (result.url) {
-                    // 顯示圖片和下載按鈕
                     document.getElementById('result').innerHTML = `
                         <img src="${result.url}" alt="Generated Image">
                         <button onclick="downloadImage('${result.url}', 'generated_image.jpg')" class="download-button">Download</button>
@@ -113,7 +127,6 @@
                 document.getElementById('result').textContent = "Network error or server issue.";
             }
         }
-
         // 使用 JavaScript 下載圖片
         function downloadImage(url, filename) {
             const link = document.createElement('a'); // 創建隱藏的下載連結
