@@ -2,11 +2,12 @@ import pyaudio
 import wave
 import numpy as np
 from openai import OpenAI
+import time
 
 # 初始化 OpenAI 客戶端
 client = OpenAI()
 
-def record_audio(output_file, sample_rate=44100, channels=1, chunk_size=1024, silence_threshold=600, silence_duration=2):#如果靜音檢測太靈敏就把silence_threshold調高一點
+def record_audio(output_file, sample_rate=44100, channels=1, chunk_size=1024, silence_threshold=700, silence_duration=2, max_duration=60):#如果靜音檢測太靈敏就把silence_threshold調高一點
     """錄音功能，當檢測到用戶無聲音時自動停止"""
     audio = pyaudio.PyAudio()
     print("錄音開始... 當您停止說話時錄音將自動結束")
@@ -21,6 +22,8 @@ def record_audio(output_file, sample_rate=44100, channels=1, chunk_size=1024, si
     frames = []
     silent_chunks = 0  # 記錄連續無聲音的塊數
     max_silent_chunks = silence_duration * sample_rate // chunk_size  # 無聲塊數閾值
+    start_time = time.time()  # 初始化 start_time，記錄錄音開始的時間
+
 
     try:
         while True:
@@ -40,6 +43,11 @@ def record_audio(output_file, sample_rate=44100, channels=1, chunk_size=1024, si
             # 如果超過靜音閾值，停止錄音
             if silent_chunks > max_silent_chunks:
                 print("檢測到靜音，錄音結束")
+                break
+
+              # 如果錄音時間超過最大時長
+            if time.time() - start_time > max_duration:
+                print("超過最大錄音時長，錄音結束")
                 break
 
     finally:

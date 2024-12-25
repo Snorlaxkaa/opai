@@ -2,8 +2,9 @@ from flask import Flask, request, render_template, jsonify
 from openai import OpenAI
 import os
 from threading import Thread
-from speak import record_audio  # 確保這裡的路徑和模組名稱正確
-from speak import transcribe_audio
+from speak import record_audio, transcribe_audio  # 如果模块位于同一项目内
+from translate import translate_text
+
 
 client = OpenAI()
 
@@ -27,17 +28,20 @@ def background_recording():
         print(f"錄音或轉錄時發生錯誤: {e}")
         raise
 
-
 # 首頁路由：渲染 index.html
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/main', methods=['GET'])
+def main():
+    return render_template('main.html')
+
 # 圖片生成路由
 @app.route('/generate', methods=['POST'])
 def generate_image():
     # 從請求中獲取 Prompt
-    prompt = request.json.get("prompt")
+    prompt = request    .json.get("prompt")
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
 
@@ -85,5 +89,28 @@ def start_recording():
         return jsonify({"success": False, "error": str(e)})
 
 
+@app.route('/translate', methods=['POST'])
+def translate():
+    try:
+        data = request.json
+        print(f"接收到的數據: {data}")  # 添加日誌
+        text = data.get('text')
+        target_language = data.get('target_language', 'English')
+
+        if not text:
+            return jsonify({"error": "Text is required"}), 400
+
+        translated_text = translate_text(text, target_language)
+        if not translated_text:
+            return jsonify({"error": "Translation failed"}), 500
+
+        return jsonify({"translated_text": translated_text})
+    except Exception as e:
+        print(f"後端錯誤: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host='127.0.0.1')

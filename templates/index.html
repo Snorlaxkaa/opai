@@ -3,106 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <title>AI Project Homepage</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>DALL·E 3 Image Generator</h1>
-        <div class="input-container">
-            <button class="record-button" onclick="startRecording()">🎤 開始錄音</button>
+    <header>
+        <div class="header-container">
+            <h1 class="header-title">Welcome to the AI Project</h1>
+            <p class="header-subtitle">Explore the power of AI with DALL·E and Whisper!</p>
+            <a href="{{ url_for('main') }}" class="header-button">Explore Now</a>
         </div>
-        <div id="controls" style="display: none;">
-            <div class="input-container">
-                <input type="text" id="prompt" placeholder="Enter a description">
-                <button onclick="generateImage()">Generate</button>
-            </div>
-        </div>
-        <div id="result"></div>
-    </div>
+    </header>
 
-
-
-
-    <script>
-        async function generateImage() {
-            const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) {
-                alert("Please enter a description!");
-                return;
-            }
-
-            document.getElementById('result').textContent = "Generating image...";
-
-            try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ prompt })
-                });
-
-                const result = await response.json();
-                if (result.url) {
-                    // Display the generated image and download button
-                    document.getElementById('result').innerHTML = `
-                        <img src="${result.url}" alt="Generated Image">
-                        <button onclick="downloadImage('${result.url}', 'generated_image.jpg')" class="download-button">Download</button>
-                    `;
-                } else {
-                    document.getElementById('result').textContent = result.error || "Error generating image.";
-                }
-            } catch (error) {
-                document.getElementById('result').textContent = "Network error or server issue.";
-            }
-        }
-
-        function downloadImage(url, filename) {
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        async function startRecording() {
-            try {
-                const response = await fetch('/start-recording', {
-                    method: 'POST'
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert("開始錄音，當您停止說話時會自動結束錄音。");
-        
-                    // 等待錄音完成後獲取轉錄結果
-                    setTimeout(async () => {
-                        const transcriptionResponse = await fetch('/transcription');
-                        const transcriptionResult = await transcriptionResponse.json();
-                        if (transcriptionResult.text) {
-                            // 將轉錄文字填入輸入框
-                            document.getElementById('prompt').value = transcriptionResult.text;
-        
-                            // 顯示輸入框和生成按鈕
-                            const controls = document.getElementById('controls');
-                            controls.classList.add('show'); // 添加 class 顯示元素
-                            controls.style.display = "block"; // 確保顯示
-                        } else {
-                            alert(transcriptionResult.error || "轉錄失敗。");
-                        }
-                    }, 5000); // 延遲等待錄音完成
-                } else {
-                    alert(result.error || "錄音失敗。");
-                }
-            } catch (error) {
-                console.error("錄音時出錯：", error);
-                alert("錄音時出錯。");
-            }
-        }
-        
-        
-        
-    </script>
+    <footer>
+        <p>&copy; 2024 AI Project. All rights reserved.</p>
+    </footer>
 </body>
 </html>

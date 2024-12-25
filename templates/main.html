@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools - Image Generator and Translator</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<div class="container">
+    <!-- 左侧：翻译功能 -->
+    <div class="panel left-panel">
+        <h2>Text Translator</h2>
+        <div class="input-container">
+            <textarea id="text-to-translate" placeholder="Enter text to translate"></textarea>
+            <button id="translate-button" onclick="translateText()">Translate</button>
+        </div>
+    </div>
+
+    <!-- 右侧：图片生成功能 -->
+    <div class="panel right-panel">
+        <h2>DALL·E 3 Image Generator</h2>
+        <div class="input-container">
+            <button class="record-button" onclick="startRecording()">🎤 Start Recording</button>
+            <textarea id="prompt" placeholder="Enter a description" "></textarea>
+            <button id="generate-button" onclick="generateImage()" style="display: none;">Generate</button>            
+        </div>
+        <div id="result" class="image-result">
+            <img src="" alt="Generated Image" style="display: none;">
+            <button id="download-button" style="display: none;">Download</button>
+        </div>
+    </div>
+</div>
+
+    
+
+    <script>
+        // Image Generator Functions
+        async function generateImage() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const resultContainer = document.getElementById('result');
+            resultContainer.textContent = "Generating image...";
+    
+            if (!prompt) {
+                resultContainer.textContent = "Please enter a description!";
+                return;
+            }
+    
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt }),
+                });
+    
+                const result = await response.json();
+                if (result.url) {
+                    resultContainer.innerHTML = `
+                        <img src="${result.url}" alt="Generated Image">
+                        <button onclick="downloadImage('${result.url}', 'generated_image.jpg')">Download</button>
+                    `;
+                } else {
+                    resultContainer.textContent = result.error || "Error generating image.";
+                }
+            } catch (error) {
+                console.error("Error generating image:", error);
+                resultContainer.textContent = "Network error or server issue.";
+            }
+        }
+        
+        function downloadImage(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+
+        async function startRecording() {
+            try {
+                const response = await fetch('/start-recording', { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    alert("開始錄音...");
+    
+                    // 等待錄音完成後檢查輸入框內容
+                    setTimeout(async () => {
+                        const transcriptionResponse = await fetch('/transcription');
+                        const transcriptionResult = await transcriptionResponse.json();
+                        if (transcriptionResult.text) {
+                            document.getElementById('prompt').value = transcriptionResult.text;
+                            alert("轉錄成功！");
+    
+                            // 顯示生成按鈕
+                            document.getElementById('generate-button').style.display = 'block';
+                        } else {
+                            alert(transcriptionResult.error || "轉錄失敗。");
+                        }
+                    }, 5000); // 適當延遲等待錄音完成
+                } else {
+                    alert(result.error || "錄音失敗。");
+                }
+            } catch (error) {
+                console.error("錄音過程出錯：", error);
+            }
+        }
+    
+        
+        
+        // 輪詢後端獲取轉錄文本
+        async function pollTranscription() {
+            const maxRetries = 10;
+            const interval = 2000;
+            let retryCount = 0;
+        
+            const resultContainer = document.getElementById('prompt'); // 對應的輸入框
+            const generateButton = document.getElementById('generate-button'); 
+        
+            while (retryCount < maxRetries) {
+                try {
+                    const transcriptionResponse = await fetch('/transcription', { method: 'GET' });
+                    const transcriptionResult = await transcriptionResponse.json();
+        
+                    if (transcriptionResult.text) {
+                        // 成功獲取文字，更新輸入框並顯示生成按鈕
+                        resultContainer.value = transcriptionResult.text;
+                        generateButton.style.display = 'block';
+                        return; // 結束輪詢
+                    }
+        
+                    retryCount++;
+                    await new Promise((resolve) => setTimeout(resolve, interval));
+                } catch (error) {
+                    console.error("獲取轉錄文本時發生錯誤：", error);
+                    break; // 發生錯誤時退出輪詢
+                }
+            }
+        
+            console.log("輪詢失敗，未能獲取轉錄文本。");
+        }
+        
+        async function translateText() {
+            const textArea = document.getElementById('text-to-translate');
+            const text = textArea.value.trim();
+            const targetLanguage = "English";
+        
+            if (!text) {
+                alert('請輸入要翻譯的文字！');
+                return;
+            }
+        
+            try {
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, target_language: targetLanguage }) // 確保數據格式正確
+                });
+        
+                const result = await response.json();
+        
+                if (response.ok) {
+                    textArea.value = result.translated_text || '翻譯失敗';
+                } else {
+                    console.error('翻譯失敗:', result.error);
+                    alert(result.error || '翻譯失敗');
+                }
+            } catch (error) {
+                console.error('請求錯誤:', error);
+                alert('翻譯過程中出現錯誤');
+            }
+        }
+        
+        
+
+        
+    </script>
+</body>
+</html>

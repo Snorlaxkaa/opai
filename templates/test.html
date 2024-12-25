@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tools - Image Generator and Translator</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<div class="container">
+    <!-- 左侧：翻译功能 -->
+    <div class="panel left-panel">
+        <h2>Text Translator</h2>
+        <div class="input-container">
+            <textarea id="text-to-translate" placeholder="Enter text to translate"></textarea>
+            <button id="translate-button" onclick="translateText()">Translate</button>
+        </div>
+    </div>
+
+    <!-- 右侧：图片生成功能 -->
+    <div class="panel right-panel">
+        <h2>DALL·E 3 Image Generator</h2>
+        <div class="input-container">
+            <button class="record-button" onclick="startRecording()">🎤 Start Recording</button>
+            <textarea id="prompt" placeholder="Enter a description" style="display: none;"></textarea>
+            <button id="generate-button" onclick="generateImage()" style="display: none;">Generate</button>            
+        </div>
+        <div id="result" class="image-result">
+            <img src="" alt="Generated Image" style="display: none;">
+            <button id="download-button" style="display: none;">Download</button>
+        </div>
+    </div>
+</div>
+
+    
+
+    <script>
+        // Image Generator Functions
+        async function generateImage() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const resultContainer = document.getElementById('result');
+            resultContainer.textContent = "Generating image...";
+        
+            if (!prompt) {
+                resultContainer.textContent = "Please enter a description!";
+                return;
+            }
+        
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt }),
+                });
+        
+                const result = await response.json();
+                if (result.url) {
+                    resultContainer.innerHTML = `
+                        <img src="${result.url}" alt="Generated Image">
+                        <button onclick="downloadImage('${result.url}', 'generated_image.jpg')">Download</button>
+                    `;
+                } else {
+                    resultContainer.textContent = result.error || "Error generating image.";
+                }
+            } catch (error) {
+                console.error("Error generating image:", error);
+                resultContainer.textContent = "Network error or server issue.";
+            }
+        }
+        
+        function downloadImage(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+
+        async function startRecording() {
+            try {
+                const response = await fetch('/start-recording', {
+                    method: 'POST'
+                });
+                const result = await response.json();
+        
+                if (result.success) {
+                    alert("開始錄音，當您停止說話時會自動結束錄音。");
+        
+                    // 輪詢機制
+                    await pollTranscription();
+                } else {
+                    alert(result.error || "錄音失敗，請重試。");
+                }
+            } catch (error) {
+                console.error("錄音時出錯：", error);
+                alert("錄音時出錯，請檢查您的設置。");
+            }
+        }
+        
+        // 輪詢後端獲取轉錄文本
+        async function pollTranscription() {
+            const maxRetries = 10; // 最大重試次數
+            const interval = 2000; // 每次重試的間隔時間 (2秒)
+            let retryCount = 0;
+        
+            const resultContainer = document.getElementById('prompt'); // Textarea 元素
+            const generateButton = document.getElementById('generate-button'); // 按鈕元素
+            const statusMessage = document.getElementById('status-message'); // 用於顯示狀態的元素
+        
+            // 初始化進度提示
+            statusMessage.textContent = "正在獲取轉錄文本...";
+            resultContainer.style.display = 'block'; // 確保 textarea 可見
+            resultContainer.value = ""; // 清空 textarea
+        
+            while (retryCount < maxRetries) {
+                try {
+                    // 發送請求獲取轉錄結果
+                    const transcriptionResponse = await fetch('/transcription', {
+                        method: 'GET'
+                    });
+                    const transcriptionResult = await transcriptionResponse.json();
+        
+                    if (transcriptionResult.text) {
+                        // 成功獲取文本，顯示結果
+                        resultContainer.value = transcriptionResult.text;
+                        generateButton.style.display = 'block'; // 顯示生成按鈕
+                        statusMessage.textContent = "轉錄完成！";
+                        return; // 成功後退出輪詢
+                    }
+        
+                    // 沒有文本，增加重試次數並等待
+                    retryCount++;
+                    statusMessage.textContent = `正在嘗試獲取文本...（嘗試次數：${retryCount}/${maxRetries}）`;
+                    await new Promise((resolve) => setTimeout(resolve, interval)); // 延遲
+                } catch (error) {
+                    // 處理異常情況
+                    console.error("輪詢轉錄文本時出錯：", error);
+                    statusMessage.textContent = "獲取轉錄文本時發生錯誤，請稍後再試。";
+                    return;
+                }
+            }
+        
+            // 超出最大重試次數的情況
+            statusMessage.textContent = "轉錄失敗，請稍後再試。";
+        }
+        
+        
+        
+        
+        
+        async function translateText() {
+            const textArea = document.getElementById('text-to-translate');
+            const text = textArea.value.trim();
+            const targetLanguage = "English";
+        
+            if (!text) {
+                alert('請輸入要翻譯的文字！');
+                return;
+            }
+        
+            try {
+                // 显示翻译中的状态
+                textArea.value = "正在翻譯中...";
+        
+                // 发起翻译请求
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, target_language: targetLanguage })
+                });
+        
+                const result = await response.json();
+        
+                if (result.translation) {
+                    // 显示翻译结果
+                    textArea.value = result.translation;
+                } else {
+                    alert(result.error || '翻譯失敗。');
+                    textArea.value = text; // 恢复原始文本
+                }
+            } catch (error) {
+                console.error('翻譯過程中出現錯誤：', error);
+                alert('翻譯時發生錯誤。');
+                textArea.value = text; // 恢复原始文本
+            }
+        }       
+
+        
+    </script>
+</body>
+</html>
